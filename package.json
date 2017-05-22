@@ -1,0 +1,15 @@
+{
+  "name": "gomoku-ws-server",
+  "version": "1.0.0",
+  "description": "A light gomoku websocket server based on NodeJS and Websocket.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "Cubelrti",
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^2.3.1"
+  }
+}
