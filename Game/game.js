@@ -1,4 +1,4 @@
-module.exports = GameInstance;
+module.exports = Game;
 
 const BOARD_STATE = {
     UNPLACED: 0,
@@ -7,7 +7,7 @@ const BOARD_STATE = {
 }
 
 
-function GameInstance(playerA, playerB, ws) {
+function Game(playerA, playerB, ws) {
     this.playerA = playerA;
     this.playerB = playerB;
     this.board = [];
@@ -16,15 +16,22 @@ function GameInstance(playerA, playerB, ws) {
         for (var j = 0; j < 20; j++){
             line.push(BOARD_STATE.UNPLACED);
         }
-        board.push(line);
+        this.board.push(line);
     }
 
     this.place = (id, x, y) => {
         this.board[y][x] = id;
         console.log(`id:${id} x:${x} y:${y}`);
     }
+    this.revert = (id, x, y) => {
+        
+    }
+    this.broadcast = (message) => {
+        this.playerA.wsInstance.send(message);
+        this.playerB.wsInstance.send(message);
+    }
+
     this.judge = (id, x, y) => {
-        //TODO: finish winner judge.
         var countx = 0, county = 0, countcrx = 0, countcry = 0;
         try {
             for (let i = -4; i <= 4; i++){
@@ -64,15 +71,11 @@ function GameInstance(playerA, playerB, ws) {
             
         }
         finally {
-            if (countx == 5 || county == 5 || countcrx == 5 || countcry == 5) return id;
+            if (countx >= 5 || county >= 5 || countcrx >= 5 || countcry >= 5) return id;
             else return -1;
         }
     }
-    this.reset = (id) => {
-        this.board.forEach(function (lines) {
-            lines.forEach(element => element = BOARD_STATE.UNPLACED);
-        }, this);
-        console.log(`Reseting Board:Init by User ${id}.`);
-    }
+    this.playerA.wsInstance.game = this;
+    this.playerB.wsInstance.game = this;
     return this;
 }
