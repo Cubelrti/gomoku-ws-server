@@ -27,8 +27,19 @@ function Game(playerA, playerB, ws) {
         
     }
     this.broadcast = (message) => {
-        this.playerA.wsInstance.send(message);
-        this.playerB.wsInstance.send(message);
+        try {
+            this
+                .playerA
+                .wsInstance
+                .send(message);
+            this
+                .playerB
+                .wsInstance
+                .send(message);
+        } catch (error) {
+            return -1;
+        }
+
     }
 
     this.judge = (id, x, y) => {

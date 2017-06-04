@@ -1,3 +1,5 @@
+'use strict';
+
 const WebSocket = require('ws');
 
 const wss = new WebSocket.Server({
@@ -7,9 +9,10 @@ const wss = new WebSocket.Server({
 const Game = require('./Game/game')
 
 class Gamer{
-    constructor(wsInstance = null, usertype = 0) {
+    constructor(wsInstance, id, usertype) {
         this.wsInstance = wsInstance;
         this.usertype = usertype;
+        this.id = id;
     }
 }
 
@@ -40,6 +43,7 @@ const SERVER_MESSAGE = {
     HANDSHAKE: "HEARTBEAT_PACKAGE_1_OK",
     AUTHENTICATE: "HEARTBEAT_PACKAGE_2_AUTHENTICATE_REQUIRED",
     DISCONNENT: "HEARTBEAT_PACKAGE_3_DISCONNECTING",
+    CHECK_ALIVE: "HEARTBEAT_PING",
     PLACED_A_GAME: "PLACED_A_GAME",
     GAME_ENDED: "GAME_ENDED",
 };
@@ -47,6 +51,18 @@ const SERVER_MESSAGE = {
 function messageHandler(message,ws) {
     if (message == CLIENT_MESSAGE.HANDSHAKE) {
         let thisId = Date.now();
+        //improve stability if one terminated websocket.
+        if (gamer1) {
+            //judge if disconnected.
+            try {
+                gamer1.wsInstance.send(SERVER_MESSAGE.CHECK_ALIVE);
+            }
+            catch (ex){
+                //gamer1 terminated.
+                gamer1 = undefined;
+            }
+        }
+
         ws.send("USERTYPE_" + addGamer(thisId, ws));
         if (gamer1 && gamer2) {
             let game = new Game(gamer1, gamer2)
@@ -68,12 +84,11 @@ function messageHandler(message,ws) {
             setTimeout(function() {
                 gameInstance.broadcast("WINNER_" + result);
             }, 1000);
-            console.log("RESETING GAME BOARD");
-            ws.game = undefined;
+            console.log("game ended with "+ result + "win.");
         }
     }
     if (message == CLIENT_MESSAGE.DISCONNENT) {
-        ws.send(SERVER_MESSAGE.DISCONNENT);
+        ws.game.broadcast(SERVER_MESSAGE.GAME_ENDED);
         ws.game = undefined;
     }
 }
