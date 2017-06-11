@@ -6,6 +6,12 @@ const BOARD_STATE = {
     B: 2
 }
 
+function isOutOfRange(where) {
+    if (where < 0 || where >= 20)
+        return true;
+    return false;
+}
+
 
 function Game(playerA, playerB, ws) {
     this.playerA = playerA;
@@ -21,7 +27,7 @@ function Game(playerA, playerB, ws) {
 
     this.place = (id, x, y) => {
         this.board[y][x] = id;
-        console.log(`id:${id} x:${x} y:${y}`);
+        console.log(`gameplay: id:${id} x:${x} y:${y}`);
     }
     this.revert = (id, x, y) => {
         
@@ -44,47 +50,71 @@ function Game(playerA, playerB, ws) {
 
     this.judge = (id, x, y) => {
         var countx = 0, county = 0, countcrx = 0, countcry = 0;
-        try {
-            for (let i = -4; i <= 4; i++){
-                //judge out of range
-                if (x + i < 0) {
-                    continue;
+        for (let i = -4; i <= 4; i++){
+            let start = x + i;
+            let count = 0;
+            for (let j = 0; j <= 4; j++){
+                if (isOutOfRange(start + j)) continue;
+                if (this.board[y][start + j] == id) {
+                    count++;
+                    if (count >= 5) {
+                        console.log(`gamejudge:from ${start} to ${start + j}`);
+                        return id;
+                    }
                 }
-                if (this.board[y][x + i] == id)
-                    countx++;
-                if (countx != 0 && this.board[y][x] != id) break;
+                else continue;
             }
-            for (let i = -4; i <= 4; i++) {
-                if (y + i < 0) {
-                    continue;
-                }
-                if (this.board[y + i][x] == id)
-                    county++;
-                if (county != 0 && this.board[y + i][x] != id) break;
-            }
-            for (let i = -4; i <= 4; i++) {
-                if (x + i < 0 || y + i < 0) {
-                    continue;
-                }
-                if (this.board[y + i][x + i] == id)
-                    countcrx++;
-                if (countcrx != 0 && this.board[y + i][x + i] != id) break;
-            }
-            for (let i = -4; i <= 4; i++) {
-                if (x - i < 0 || y + i < 0) {
-                    continue;
-                }
-                if (this.board[y + i][x - i] == id)
-                    countcry++;
-                if (countcry != 0 && this.board[y + i][x - i] != id) break;
-            }            
-        } catch (error) {
-            
         }
-        finally {
-            if (countx >= 5 || county >= 5 || countcrx >= 5 || countcry >= 5) return id;
-            else return -1;
+        for (let i = -4; i <= 4; i++){
+            let start = y + i;
+            let count = 0;
+            for (let j = 0; j <= 4; j++){
+                if(isOutOfRange(start+j)) continue;
+                if (this.board[start + j][x] == id) {
+                    count++;
+                    if (count >= 5) {
+                        console.log(`gamejudge:from ${start} to ${start + j}`);
+                        return id;
+                    }                    
+                }
+                else continue;
+            }
         }
+        for (let i = -4; i <= 4; i++){
+            let startx = x + i;
+            let starty = y + i;
+            let count = 0;
+            for (let j = 0; j <= 4; j++){
+                if(isOutOfRange(startx+j) || isOutOfRange(starty+j)) continue;
+                if (this.board[starty + j][startx + j] == id) {
+                    count++;
+                    if (count >= 5) {
+                        console.log(`gamejudge:from ${startx} to ${startx + j}`);
+                        return id;
+                    }                    
+                }
+                else continue;
+            }
+        }
+
+        for (let i = -4; i <= 4; i++){
+            let startx = x + i;
+            let starty = y - i;
+            let count = 0;
+            for (let j = 0; j <= 4; j++){
+                if(isOutOfRange(starty-j) || isOutOfRange(startx+j)) continue;                 
+                if (this.board[starty - j][startx + j] == id) {
+                    count++;
+                    if (count >= 5) {
+                        console.log(`gamejudge:from ${startx} to ${startx + j}`);
+                        return id;
+                    }                    
+                }
+                else continue;
+            }
+        }
+        return -1;
+        
     }
     this.playerA.wsInstance.game = this;
     this.playerB.wsInstance.game = this;
