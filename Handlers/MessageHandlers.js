@@ -105,7 +105,6 @@ function messageHandler(message, ws, ServerState) {
             .sort(function (a, b) {
                 return ranking[b] - ranking[a];
             });
-
         for (var key of keys) {
                 var element = ranking[key];
                 outMessage += (element + "/" + key + "_");
